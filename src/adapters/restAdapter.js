@@ -38,6 +38,53 @@ async function getResidentById(id) {
 }
 
 
+async function getAllResidents() {
+
+    const residents = [];
+    const seenIds = new Set();
+
+    let page = 1;
+    let hasMore = true;
+
+    while (hasMore) {
+
+        const url =
+            `${config.REST_URL}/residents?page=${page}&page_size=25`;
+
+        const response = await fetchWithTimeout(url);
+
+        if (!response.ok) {
+            throw new Error(
+                `REST service returned HTTP ${response.status}`
+            );
+        }
+
+        const data = await response.json();
+
+        for (const resident of data.results || []) {
+
+            if (!seenIds.has(resident.id)) {
+
+                seenIds.add(resident.id);
+                residents.push(resident);
+            }
+        }
+
+        hasMore = data.has_more === true;
+        page++;
+
+        if (page > 10000) {
+            throw new Error(
+                "REST pagination exceeded safety limit"
+            );
+        }
+    }
+
+    return residents;
+}
+
+
 module.exports = {
-    getResidentById
+    getResidentById,
+    getAllResidents
 };
