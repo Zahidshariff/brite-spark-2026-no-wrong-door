@@ -41,6 +41,13 @@ app.get("/residents/:id", async (req, res) => {
 
         if (!result.found) {
 
+            const residentSource =
+                result.sources?.resident_index;
+
+            if (residentSource?.status === "unavailable") {
+                return res.status(200).json(result);
+            }
+
             return res.status(404).json(result);
         }
 
@@ -57,7 +64,6 @@ app.get("/residents/:id", async (req, res) => {
     }
 
 });
-
 
 app.listen(config.PORT, () => {
 
